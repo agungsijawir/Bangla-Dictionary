@@ -1,6 +1,7 @@
-package buet.rafi.dictionary;
+package buet.rafi.dictionary.activity;
 
 import android.app.AlertDialog;
+import android.app.ListActivity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -15,8 +16,13 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import buet.rafi.dictionary.R;
+import buet.rafi.dictionary.adapter.WordListAdapter;
+import buet.rafi.dictionary.db.DataLoader;
+import buet.rafi.dictionary.db.DatabaseInitializer;
+import buet.rafi.dictionary.db.DictionaryDB;
 
-public class Dictionary extends ActionBarListActivity {
+public class DictionaryActivity extends ListActivity {
 	private EditText input;
 	private TextView empty;
 	
@@ -82,11 +88,11 @@ public class Dictionary extends ActionBarListActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     	if(item.getItemId() == R.id.bookmarked_words) {
-    		Intent intent = new Intent(this, BookMarkedWords.class);
+    		Intent intent = new Intent(this, BookMarkedWordsActivity.class);
     		startActivity(intent);
     	}
     	else if(item.getItemId() == R.id.about) {
-    		Intent intent = new Intent(this, About.class);
+    		Intent intent = new Intent(this, AboutActivity.class);
     		startActivity(intent);
     	}
     	
@@ -105,7 +111,7 @@ public class Dictionary extends ActionBarListActivity {
 		final EditText english = (EditText) addNew.findViewById(R.id.english_input);
 		final EditText bangla = (EditText) addNew.findViewById(R.id.Bangla_input);
 		
-		bangla.setTypeface(Typeface.createFromAsset(getAssets(), Dictionary.FONT));
+		bangla.setTypeface(Typeface.createFromAsset(getAssets(), DictionaryActivity.FONT));
 
 		final AlertDialog.Builder newWordInputDialog = new AlertDialog.Builder(this);
 		newWordInputDialog
@@ -116,26 +122,28 @@ public class Dictionary extends ActionBarListActivity {
 						public void onClick(DialogInterface dialog,
 								int whichButton) {
 
-							String englishWord = english.getText().toString();
-							String banglaWord = bangla.getText().toString();
-							if((englishWord.equals("") || banglaWord.equals("")))
-								Toast.makeText(getBaseContext(), "Field can't be blank",
-										Toast.LENGTH_SHORT).show();
-							else {
-								dictionaryDB.addWord(englishWord, banglaWord);
-								
-								Toast.makeText(getBaseContext(), "Word Added to the Dictionary",
-										Toast.LENGTH_SHORT).show();
-							}
+							addNewWord(english, bangla);
 						}
 					})
 			.setNegativeButton("Cancel",
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog,
-								int whichButton) {
-							
-						}
+								int whichButton) {}
 					});
 		newWordInputDialog.show();
+	}
+
+	private void addNewWord(final EditText english, final EditText bangla) {
+		String englishWord = english.getText().toString();
+		String banglaWord = bangla.getText().toString();
+		if((englishWord.equals("") || banglaWord.equals("")))
+			Toast.makeText(this, "Field can't be blank",
+					Toast.LENGTH_SHORT).show();
+		else {
+			dictionaryDB.addWord(englishWord, banglaWord);
+			
+			Toast.makeText(this, "Word Added to the Dictionary",
+					Toast.LENGTH_SHORT).show();
+		}
 	}
 }

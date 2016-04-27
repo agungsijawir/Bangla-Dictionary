@@ -1,4 +1,4 @@
-package buet.rafi.dictionary;
+package buet.rafi.dictionary.adapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +15,14 @@ import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import buet.rafi.dictionary.R;
+import buet.rafi.dictionary.activity.DictionaryActivity;
+import buet.rafi.dictionary.db.DictionaryDB;
+import buet.rafi.dictionary.model.Word;
 
 public class WordListAdapter extends BaseAdapter {
 
-	private List<Bean> wordList;
+	private List<Word> wordList;
 	private Activity context;
 	private LayoutInflater mLayoutInflater;
 	private DictionaryDB dictionaryDB;
@@ -28,7 +32,7 @@ public class WordListAdapter extends BaseAdapter {
 		this.dictionaryDB = dictionaryDB;
 		mLayoutInflater = (LayoutInflater) context
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		wordList = new ArrayList<Bean>();
+		wordList = new ArrayList<Word>();
 	}
 
 	public int getCount() {
@@ -44,7 +48,7 @@ public class WordListAdapter extends BaseAdapter {
 	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
-		final Bean word = wordList.get(position);
+		final Word word = wordList.get(position);
 		View view = convertView;
 		if (view == null) {
 			view = mLayoutInflater.inflate(R.layout.word, null);
@@ -52,38 +56,44 @@ public class WordListAdapter extends BaseAdapter {
 		TextView english = (TextView) view.findViewById(R.id.english);
 		TextView bangla = (TextView) view.findViewById(R.id.bangla);
 		final ImageButton bookmark = (ImageButton) view.findViewById(R.id.bookmark);
-		bangla.setTypeface(Typeface.createFromAsset(context.getAssets(), Dictionary.FONT));
+		bangla.setTypeface(Typeface.createFromAsset(context.getAssets(), DictionaryActivity.FONT));
 		
 		english.setText(word.english);
 		bangla.setText(word.bangla);
 		
-		if(word.status != null && word.status.equals(DictionaryDB.BOOKMARKED)) 
+		if(word.status != null && word.status.equals(DictionaryDB.BOOKMARKED)) {
 			bookmark.setImageResource(R.drawable.bookmarked);
-		else
+		}
+		else {
 			bookmark.setImageResource(R.drawable.not_bookmarked);
+		}
 		
 		bookmark.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				if(word.status != null && word.status.equals(DictionaryDB.BOOKMARKED)) {
-					dictionaryDB.deleteBookmark(word.id);
-					word.status = "";
-					bookmark.setImageResource(R.drawable.not_bookmarked);
-					Toast.makeText(context, "Bookmark Deleted", Toast.LENGTH_SHORT).show();
-				}
-				else {
-					dictionaryDB.bookmark(word.id);
-					word.status = DictionaryDB.BOOKMARKED;
-					bookmark.setImageResource(R.drawable.bookmarked);
-					Toast.makeText(context, "Bookmark Added", Toast.LENGTH_SHORT).show();
-				}
+				bookMarkWord(word, bookmark);
 			}
 		});
 		
 		return view;
 	}
+
+	private void bookMarkWord(final Word word, final ImageButton bookmark) {
+		if (word.status != null && word.status.equals(DictionaryDB.BOOKMARKED)) {
+			dictionaryDB.deleteBookmark(word.id);
+			word.status = "";
+			bookmark.setImageResource(R.drawable.not_bookmarked);
+			Toast.makeText(context, "Bookmark Deleted", Toast.LENGTH_SHORT).show();
+		}
+		else {
+			dictionaryDB.bookmark(word.id);
+			word.status = DictionaryDB.BOOKMARKED;
+			bookmark.setImageResource(R.drawable.bookmarked);
+			Toast.makeText(context, "Bookmark Added", Toast.LENGTH_SHORT).show();
+		}
+	}
 	
-	public void updateEntries(List<Bean> wordList) {
+	public void updateEntries(List<Word> wordList) {
 		if (wordList == null) {
 			AlertDialog dialog = new AlertDialog.Builder(context)
 				.setTitle("Sorry!")
